@@ -27,6 +27,7 @@ namespace Simon
         Random rand;
         Turn turn = Turn.PLAYER;
         float turnTime;
+        bool released = true;
 
         List<SimonColors> moves;   // Hint
         int PlayBackIndex = 0;  // Index into moves list
@@ -128,13 +129,16 @@ namespace Simon
                         PlayBackIndex += 1;
                     }
                 }
-                // If PlayBackIndex == moves.Count then turn = Turn.PLAYER (and set PlayerTurnIndex to 0)
+                if (PlayBackIndex == moves.Count)
+                {
+                    turn = Turn.PLAYER;
+                    PlayBackIndex = 0;
+                }
             }
             else if (turn == Turn.PLAYER)
             {
                 MouseState ms = Mouse.GetState();
-
-                if (ms.LeftButton == ButtonState.Pressed)
+                if (ms.LeftButton == ButtonState.Pressed && released == true)
                 {
                     // Check to see if green button is hit.. add code to make sure the mouse button is depressed so you
                     // don't respond to this buttonpress twice in a row
@@ -146,7 +150,14 @@ namespace Simon
 
                         SoundManager.PlaySimonSound(Lit);
                     }
+
+                    
+
                 }
+                else if (ms.LeftButton == ButtonState.Released)
+                    {
+                        released = true;
+                    }
             }
             else if (turn == Turn.GAMEOVER)
             {
