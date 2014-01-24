@@ -23,7 +23,7 @@ namespace Simon
         {
             try
             {
-                gameOver = content.Load<SoundEffect>(@"gameover");
+                gameOver = content.Load<SoundEffect>(@"gameover2");
 
                 for (int x = 1; x <= simonSoundCount; x++)
                 {

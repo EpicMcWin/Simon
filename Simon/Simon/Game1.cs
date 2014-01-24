@@ -25,9 +25,11 @@ namespace Simon
         Texture2D simon;
         Texture2D cursor;
         Random rand;
-        Turn turn = Turn.PLAYER;
+        Turn turn = Turn.COMPUTER;
         float turnTime;
         bool released = true;
+        bool PlayerOnDeck = false;
+
 
         List<SimonColors> moves;   // Hint
         int PlayBackIndex = 0;  // Index into moves list
@@ -96,6 +98,7 @@ namespace Simon
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+            Window.Title = "Streak: " + (moves.Count - 1);
             // Allows the game to exit
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed)
                 this.Exit();
@@ -108,9 +111,10 @@ namespace Simon
                 if (turnTime >= 1000)
                 {
                     moves.Add((SimonColors)rand.Next(0, 4));
-                    turn = Turn.PLAYBACK;
                     PlayBackIndex = 0;
                     turnTime = 0;
+                    PlayerOnDeck = true;
+                    turn = Turn.PLAYBACK;
                 }
                  
                  
@@ -118,46 +122,67 @@ namespace Simon
             }
             else if (turn == Turn.PLAYBACK)
             {
+                
                 // TODO: Play one move every 750ms.. 
                 // DO NOT PLAY BACK ALL MOVES AT ONCE
-                if (turnTime >= 750)
-                {
-                    for (int x = 0; x <= moves.Count; x++)
+
+                    if (turnTime >= 750)
                     {
-                        Lit = moves[x];
-                        turnTime = 0;
-                        PlayBackIndex += 1;
+                        if (PlayBackIndex <= moves.Count - 1)
+                        {
+                            Lit = moves[PlayBackIndex];
+                            turnTime = 0;
+                            SoundManager.PlaySimonSound(Lit);
+                            PlayBackIndex += 1;
+                        }
                     }
-                }
-                if (PlayBackIndex == moves.Count)
-                {
-                    turn = Turn.PLAYER;
-                    PlayBackIndex = 0;
-                }
+                
+                    else if (PlayBackIndex == moves.Count)
+                    {
+                        
+                        PlayBackIndex = 0;
+                        turnTime = 0;
+                        turn = Turn.PLAYER;
+                        
+                    }
+                
             }
             else if (turn == Turn.PLAYER)
             {
                 MouseState ms = Mouse.GetState();
+                PlayerOnDeck = false;
                 if (ms.LeftButton == ButtonState.Pressed && released == true)
                 {
+                    released = false;
                     // Check to see if green button is hit.. add code to make sure the mouse button is depressed so you
                     // don't respond to this buttonpress twice in a row
                     Lit = getPressed();
 
                     if (Lit != SimonColors.NONE)
                     {
-                        // do something here!  Maybe see if Lit was the correct button to press?
-
-                        SoundManager.PlaySimonSound(Lit);
+                        if (Lit == moves[PlayerTurnIndex])
+                        {
+                            SoundManager.PlaySimonSound(Lit);
+                            PlayerTurnIndex++;
+                            if (PlayerTurnIndex == moves.Count)
+                            {
+                                turn = Turn.COMPUTER;
+                                turnTime = 0;
+                                PlayerTurnIndex = 0;
+                            }
+                        }
+                        else
+                        {
+                            turn = Turn.GAMEOVER;
+                        }
                     }
-
-                    
-
                 }
+
                 else if (ms.LeftButton == ButtonState.Released)
-                    {
-                        released = true;
-                    }
+                {
+                    released = true;
+                }
+
             }
             else if (turn == Turn.GAMEOVER)
             {
